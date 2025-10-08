@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hidden_gem/screens/edit_profile_view.dart';
+import 'package:hidden_gem/service/google_auth.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
         title: Center(child: Text("Profile")),
@@ -31,11 +31,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ],
                       shape: BoxShape.circle,
-                      image: const DecorationImage(
+                      image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: NetworkImage(
-                          "https://i.pinimg.com/1200x/82/85/96/828596ef925a10e8c1a76d3a3be1d3e5.jpg",
-                        ),
+                        image: FirebaseService().getUserImage(),
                       ),
                     ),
                   ),
@@ -89,7 +87,6 @@ Widget customButton(String buttonText, VoidCallback onPressed) {
   );
 }
 
-// Function needs BuildContext to work
 void goToSettings(BuildContext context) {
   Navigator.of(
     context,

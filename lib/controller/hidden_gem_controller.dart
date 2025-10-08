@@ -20,32 +20,4 @@ class MarkerService {
       }).toList();
     });
   }
-
-  // /// 🔹 Add a new marker to Firestore
-  // Future<void> addMarker(String name, double lat, double lng) async {
-  //   await _firestore.collection('markers').add({
-  //     'name': name,
-  //     'lat': lat,
-  //     'lng': lng,
-  //   });
-  // }
-
-  // /// 🔹 Delete a marker by document ID
-  // Future<void> deleteMarker(String markerId) async {
-  //   await _firestore.collection('markers').doc(markerId).delete();
-  // }
-
-  // /// 🔹 Update an existing marker
-  // Future<void> updateMarker(
-  //   String markerId,
-  //   String name,
-  //   double lat,
-  //   double lng,
-  // ) async {
-  //   await _firestore.collection('markers').doc(markerId).update({
-  //     'name': name,
-  //     'lat': lat,
-  //     'lng': lng,
-  //   });
-  // }
 }

@@ -1,4 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hidden_gem/screens/login_screen.dart';
+import 'package:hidden_gem/service/google_auth.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -14,13 +18,16 @@ class _ProfileScreenState extends State<EditProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        //automaticallyImplyLeading: false, // removes go back button
         actions: [
-          //action is used to move the icon the the far right
           IconButton(
             icon: const Icon(Icons.logout_rounded),
-            onPressed: () {
+            onPressed: () async {
               // Logout
+              await FirebaseAuth.instance.signOut();
+              await GoogleSignIn().signOut();
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (context) => LoginScreen()));
             },
           ),
         ],
@@ -49,14 +56,13 @@ class _ProfileScreenState extends State<EditProfile> {
                           ),
                         ],
                         shape: BoxShape.circle,
-                        image: const DecorationImage(
+                        image: DecorationImage(
                           fit: BoxFit.cover,
-                          image: NetworkImage(
-                            "https://i.pinimg.com/1200x/82/85/96/828596ef925a10e8c1a76d3a3be1d3e5.jpg",
-                          ),
+                          image: FirebaseService().getUserImage(),
                         ),
                       ),
                     ),
+
                     Positioned(
                       bottom: 0,
                       right: 0,
@@ -75,9 +81,7 @@ class _ProfileScreenState extends State<EditProfile> {
                 ),
               ),
               const SizedBox(height: 30),
-              buildTextField("Full Name", "smollan", false),
-              buildTextField("Password", "123456", true),
-              // buildTextField("Full Name", "smollan", false),
+              buildTextField("Display Name", "", false),
               buildDescriptionField(
                 "Description",
                 "Write something about yourself here...",

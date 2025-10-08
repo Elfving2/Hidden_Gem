@@ -38,12 +38,4 @@ class HiddenGemService {
       return markers;
     });
   }
-
-  // Future<void> addMarker(String name, double lat, double lng) async {
-  //   await _firestore.collection('markers').add({
-  //     'name': name,
-  //     'lat': lat,
-  //     'lng': lng,
-  //   });
-  // }
 }
