@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hidden_gem/screens/friend_request_view.dart';
 import 'package:hidden_gem/screens/friends_view.dart';
 import 'package:hidden_gem/screens/map_screen.dart';
 import 'package:hidden_gem/screens/profile_screen.dart';
@@ -24,10 +23,6 @@ class BottomNavigationbar extends StatelessWidget {
           destinations: const [
             NavigationDestination(icon: Icon(Icons.map), label: "Map"),
             NavigationDestination(icon: Icon(Icons.share), label: "Feed"),
-            NavigationDestination(
-              icon: Icon(Icons.person_add),
-              label: "Requests",
-            ),
             NavigationDestination(icon: Icon(Icons.group), label: "Friends"),
             NavigationDestination(icon: Icon(Icons.person), label: "Profile"),
           ],
@@ -39,13 +34,12 @@ class BottomNavigationbar extends StatelessWidget {
 }
 
 class NavigationController extends GetxController {
-  final Rx<int> selectedIndex = 4.obs;
+  final Rx<int> selectedIndex = 3.obs;
   // add screens
   final screens = [
     MapPage(),
     const SocialMediaFeed(),
-    const FriendRequestView(),
-    const FriendsView(),
+    FriendsView(),
     const ProfileScreen(),
   ];
 }

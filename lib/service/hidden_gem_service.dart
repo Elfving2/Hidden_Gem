@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HiddenGemService {
@@ -9,33 +10,26 @@ class HiddenGemService {
     LatLng selectedPosition,
   ) async {
     try {
-      FirebaseFirestore.instance.collection("Gems").add({
+      final user = FirebaseAuth.instance.currentUser;
+      final gemRef = await FirebaseFirestore.instance.collection("Gems").add({
         "name": name,
         "description": description,
         "images": images,
-        "lattitude": selectedPosition.latitude,
+        "latitude": selectedPosition.latitude,
         "longitude": selectedPosition.longitude,
+        "ownerId": user!.uid,
       });
+
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update(
+        {
+          'gems': FieldValue.arrayUnion([gemRef.id]),
+        },
+      );
+
       return true;
     } catch (e) {
+      print("Error uploading gem: $e");
       return false;
     }
-  }
-
-  Stream<Set<Marker>> getMarkerStream() {
-    return FirebaseFirestore.instance.collection('gems').snapshots().map((
-      snapshot,
-    ) {
-      final markers = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return Marker(
-          markerId: MarkerId(doc.id),
-          position: LatLng(data['lat'], data['lng']),
-          infoWindow: InfoWindow(title: data['name']),
-        );
-      }).toSet();
-
-      return markers;
-    });
   }
 }

@@ -53,8 +53,8 @@ class ProfileScreen extends StatelessWidget {
             GridView.count(
               physics: NeverScrollableScrollPhysics(),
               crossAxisCount: 3,
-              mainAxisSpacing: 5.0, // vertical gap
-              crossAxisSpacing: 5.0, // horizontal gap
+              mainAxisSpacing: 5.0,
+              crossAxisSpacing: 5.0,
               shrinkWrap: true,
               children: List.generate(12, (index) {
                 return Container(

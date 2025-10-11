@@ -17,7 +17,7 @@ class CloudinaryService {
         folder: 'images',
       ),
     );
-    return response.secureUrl; // Direct link to the uploaded image
+    return response.secureUrl;
   }
 
   // Upload multiple images

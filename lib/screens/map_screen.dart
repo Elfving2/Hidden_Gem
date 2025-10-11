@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hidden_gem/components/addHiddenGem.dart';
-import 'package:hidden_gem/components/hiddengem.dart';
+import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/controller/hidden_gem_controller.dart';
 import 'package:location/location.dart';
 
@@ -31,6 +32,7 @@ class _MapWidgetState extends State<MapWidget> {
       Completer<GoogleMapController>();
   bool pickingLocation = false;
   LatLng? selectedPosition;
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
@@ -40,7 +42,7 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   void _listenToMarkers() {
-    _markerService.getGemStream().listen((gems) {
+    _markerService.getUserGemStream(userId).listen((gems) {
       setState(() {
         _markers
           ..clear()

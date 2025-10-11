@@ -1,17 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hidden_gem/service/user_services.dart';
 
 class FirebaseService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final user = FirebaseAuth.instance.currentUser;
+  final UserService userService = UserService();
 
   Future<UserCredential?> signInWithGoogle() async {
-    // Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     if (googleUser == null) return null;
 
-    // Get auth tokens
     final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
 
@@ -20,8 +21,17 @@ class FirebaseService {
       accessToken: googleAuth.accessToken,
     );
 
-    // Sign in with Firebase
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+    final userCredential = await FirebaseAuth.instance.signInWithCredential(
+      credential,
+    );
+
+    final firebaseUser = userCredential.user;
+
+    if (firebaseUser != null) {
+      await userService.createUserIfNotExists(firebaseUser);
+    }
+
+    return userCredential;
   }
 
   Future<void> signOut() async {
