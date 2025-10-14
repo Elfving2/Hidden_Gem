@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:hidden_gem/service/friend_request_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FriendsView extends StatelessWidget {
   FriendsView({super.key});
+
   final TextEditingController emailController = TextEditingController();
-  UserService userService = UserService();
-  FriendRequestService friendRequestService = FriendRequestService();
+  final UserService userService = UserService();
+  final FriendRequestService friendRequestService = FriendRequestService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Center(child: Text("Friends")),
+        title: const Center(child: Text("Friends")),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add),
@@ -36,11 +38,11 @@ class FriendsView extends StatelessWidget {
                         const SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () async {
-                            //friendRequestService.getFriends();
                             final email = emailController.text.trim();
                             final uid = await userService.getUserIdByEmail(
                               email,
                             );
+
                             if (uid == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text("User not found")),
@@ -50,22 +52,20 @@ class FriendsView extends StatelessWidget {
 
                             String message = "Something went wrong!";
                             if (await userService.sendFriendRequest(uid)) {
-                              message = "Friend request was sent successfully!";
+                              message = "Friend request sent successfully!";
                             }
 
+                            Navigator.of(context).pop(); // Close dialog
                             ScaffoldMessenger.of(
                               context,
                             ).showSnackBar(SnackBar(content: Text(message)));
-                            Navigator.of(context).pop();
                           },
                           child: const Text("Send Friend Request"),
                         ),
                         const SizedBox(height: 16),
-
-                        // 👇 Wrap the StreamBuilder output in a SizedBox
+                        // Stream for incoming friend requests
                         SizedBox(
-                          height:
-                              250, // or MediaQuery.of(context).size.height * 0.4
+                          height: 250,
                           child: StreamBuilder<List<Map<String, dynamic>>>(
                             stream: friendRequestService
                                 .getIncomingFriendRequests(),
@@ -83,7 +83,6 @@ class FriendsView extends StatelessWidget {
                               }
 
                               return ListView.builder(
-                                shrinkWrap: true,
                                 itemCount: requests.length,
                                 itemBuilder: (context, index) {
                                   final req = requests[index];
@@ -116,9 +115,8 @@ class FriendsView extends StatelessWidget {
           ),
         ],
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: friendRequestService
-            .getFriends(), // your new getFriends() method
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: friendRequestService.getFriendsStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -134,7 +132,12 @@ class FriendsView extends StatelessWidget {
             itemCount: friends.length,
             itemBuilder: (context, index) {
               final friend = friends[index];
-              return MockupFriend(friend['displayName'], friend['photoUrl']);
+              return MockupFriend(
+                friend['displayName'],
+                friend['photoUrl'],
+                friend['uid'],
+                friendRequestService,
+              );
             },
           );
         },
@@ -143,28 +146,29 @@ class FriendsView extends StatelessWidget {
   }
 }
 
-// Remove later to one component (one in friend_request_view) as well
-Widget MockupFriend(String fullName, String profilePicture) {
+Widget MockupFriend(
+  String fullName,
+  String profilePicture,
+  String uid,
+  FriendRequestService service,
+) {
   return Card(
     child: Padding(
-      padding: EdgeInsets.all(10),
-      child: Column(
+      padding: const EdgeInsets.all(10),
+      child: Row(
         children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundImage: NetworkImage(profilePicture),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(fullName)],
-                ),
-              ),
-            ],
+          CircleAvatar(
+            radius: 28,
+            backgroundImage: NetworkImage(profilePicture),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(fullName, style: const TextStyle(fontSize: 16))),
+          ElevatedButton(
+            onPressed: () async {
+              await service.removeFriend(uid);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("Remove"),
           ),
         ],
       ),
@@ -190,12 +194,7 @@ Widget MockupFriendRequest(
                 backgroundImage: NetworkImage(profilePicture),
               ),
               const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(fullName)],
-                ),
-              ),
+              Expanded(child: Text(fullName)),
             ],
           ),
           const SizedBox(height: 12),
@@ -206,21 +205,15 @@ Widget MockupFriendRequest(
                 onPressed: onAccept,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
                   minimumSize: const Size(120, 40),
                 ),
                 child: const Text("Accept"),
               ),
-              const SizedBox(width: 30),
+              const SizedBox(width: 20),
               ElevatedButton(
                 onPressed: onDecline,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
                   minimumSize: const Size(120, 40),
                 ),
                 child: const Text("Decline"),

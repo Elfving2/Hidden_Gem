@@ -17,6 +17,7 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
   final List<File> images = [];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  bool isPublic = true;
 
   @override
   void dispose() {
@@ -123,6 +124,19 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
               ],
             ),
             const SizedBox(height: 40),
+            Row(
+              children: [
+                Switch(
+                  value: isPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      isPublic = value;
+                    });
+                  },
+                ),
+                Text("Public"),
+              ],
+            ),
             ElevatedButton(
               onPressed: () async {
                 final name = nameController.text;
@@ -136,6 +150,7 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
                   description,
                   stringImages,
                   widget.selectedPosition,
+                  isPublic,
                 );
 
                 ScaffoldMessenger.of(context).showSnackBar(

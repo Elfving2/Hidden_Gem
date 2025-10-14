@@ -9,6 +9,7 @@ class AppUser {
   final String description;
   final List<String> friends;
   final List<String> gems;
+  final List<String> liked;
 
   AppUser({
     required this.id,
@@ -18,6 +19,7 @@ class AppUser {
     required this.description,
     required this.friends,
     required this.gems,
+    required this.liked,
   });
 
   factory AppUser.fromAuthUser(auth.User user) {
@@ -29,6 +31,7 @@ class AppUser {
       description: '',
       friends: [],
       gems: [],
+      liked: [],
     );
   }
   Map<String, dynamic> toMap() {
@@ -39,7 +42,21 @@ class AppUser {
       'email': email,
       'friends': friends,
       'gems': gems,
+      'liked': liked,
     };
+  }
+
+  factory AppUser.fromMap(String id, Map<String, dynamic> map) {
+    return AppUser(
+      id: id,
+      displayName: map['displayName'] ?? '',
+      photoUrl: map['photoUrl'] ?? '',
+      description: map['description'] ?? '',
+      email: map['email'] ?? '',
+      friends: List<String>.from(map['friends'] ?? []),
+      gems: List<String>.from(map['gems'] ?? []),
+      liked: List<String>.from(map['liked'] ?? []),
+    );
   }
 
   Future<void> saveChanges() async {

@@ -72,38 +72,53 @@ class FriendRequestService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getFriends() async {
+  Stream<List<Map<String, dynamic>>> getFriendsStream() {
     final currentUser = _auth.currentUser;
+    if (currentUser == null) return const Stream.empty();
 
-    final userData = await _firestore
+    return _firestore
         .collection('users')
-        .doc(currentUser!.uid)
-        .get();
+        .doc(currentUser.uid)
+        .snapshots()
+        .map((userDoc) {
+          List<dynamic> friendIdsDynamic = userDoc.data()?['friends'] ?? [];
+          List<String> friendIds = friendIdsDynamic.cast<String>();
 
-    if (!userData.exists) return [];
+          // Build a list of friend Futures
+          return Future.wait(
+            friendIds.map((friendId) async {
+              final friendDoc = await _firestore
+                  .collection('users')
+                  .doc(friendId)
+                  .get();
+              if (!friendDoc.exists) return null;
 
-    print("UserData:  ${userData['friends']}");
+              final data = friendDoc.data()!;
+              return {
+                'uid': friendDoc.id,
+                'displayName': data['displayName'],
+                'photoUrl': data['photoUrl'],
+              };
+            }).toList(),
+          ).then(
+            (friends) => friends.whereType<Map<String, dynamic>>().toList(),
+          );
+        })
+        .asyncMap((event) async => await event);
+  }
 
-    List<dynamic> friendIds = userData['friends'] ?? [];
+  Future<void> removeFriend(String friendUid) async {
+    final currentUser = _auth.currentUser;
+    final userRef = FirebaseFirestore.instance.collection('users');
 
-    if (friendIds.isEmpty) return [];
+    // Remove friendUid from current user's friends array
+    await userRef.doc(currentUser!.uid).update({
+      'friends': FieldValue.arrayRemove([friendUid]),
+    });
 
-    // Fetch all friend documents by ID
-    List<Map<String, dynamic>> friends = [];
-
-    for (String friendId in friendIds) {
-      final friendDoc = await _firestore
-          .collection('users')
-          .doc(friendId)
-          .get();
-
-      print("friends: ${friendDoc.data()}");
-
-      friends.add({
-        'displayName': friendDoc['displayName'],
-        'photoUrl': friendDoc['photoUrl'],
-      });
-    }
-    return friends;
+    // Remove current user from friend's friends array
+    await userRef.doc(friendUid).update({
+      'friends': FieldValue.arrayRemove([currentUser.uid]),
+    });
   }
 }

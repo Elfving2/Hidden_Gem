@@ -42,7 +42,7 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   void _listenToMarkers() {
-    _markerService.getUserGemStream(userId).listen((gems) {
+    _markerService.getUserAndFriendsGems().listen((gems) {
       setState(() {
         _markers
           ..clear()
@@ -55,6 +55,9 @@ class _MapWidgetState extends State<MapWidget> {
     return Marker(
       markerId: MarkerId(gem.id),
       position: LatLng(gem.latitude, gem.longitude),
+      icon: _markerService.isUsersPost(gem.ownerId)
+          ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed)
+          : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
       onTap: () {
         showDialog(
           context: context,
@@ -141,7 +144,7 @@ class _MapWidgetState extends State<MapWidget> {
         );
       },
 
-      infoWindow: InfoWindow(title: gem.name, snippet: gem.description),
+      //infoWindow: InfoWindow(title: gem.name, snippet: gem.description),
     );
   }
 

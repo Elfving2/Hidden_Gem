@@ -8,6 +8,7 @@ class HiddenGemService {
     String description,
     List<String> images,
     LatLng selectedPosition,
+    bool isPublic,
   ) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -18,6 +19,7 @@ class HiddenGemService {
         "latitude": selectedPosition.latitude,
         "longitude": selectedPosition.longitude,
         "ownerId": user!.uid,
+        "isPublic": isPublic,
       });
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).update(

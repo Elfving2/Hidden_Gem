@@ -5,6 +5,8 @@ class HiddenGem {
   final double latitude;
   final double longitude;
   final List<String> imageUrls;
+  final String ownerId;
+  final bool isPublic;
 
   HiddenGem({
     required this.id,
@@ -13,9 +15,7 @@ class HiddenGem {
     required this.latitude,
     required this.longitude,
     required this.imageUrls,
+    required this.ownerId,
+    required this.isPublic,
   });
-
-  String displayValues() {
-    return (imageUrls[0]);
-  }
 }
