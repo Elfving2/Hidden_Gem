@@ -87,6 +87,23 @@ class UserService {
         );
   }
 
+  Future<AppUser> getLoggedInUserData() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .get();
+    return AppUser.fromMap(user!.uid, doc.data()!);
+  }
+
+  Future<bool> saveProfile(String newName, String newDescription) async {
+    if (newName == "" || newDescription == "") return false;
+    await _firestore.collection('users').doc(user!.uid).update({
+      'displayName': newName,
+      'description': newDescription,
+    });
+    return true;
+  }
+
   Future<AppUser> getUserById(String userId) async {
     final doc = await FirebaseFirestore.instance
         .collection('users')

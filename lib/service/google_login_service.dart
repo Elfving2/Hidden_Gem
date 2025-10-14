@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
@@ -37,14 +35,5 @@ class FirebaseService {
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
     await _googleSignIn.signOut();
-  }
-
-  ImageProvider getUserImage() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user?.photoURL != null && user!.photoURL!.isNotEmpty) {
-      return NetworkImage(user.photoURL!);
-    } else {
-      return const AssetImage('assets/images/stockUrlImage.jpg');
-    }
   }
 }

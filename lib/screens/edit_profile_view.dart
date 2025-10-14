@@ -1,65 +1,46 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hidden_gem/components/buildDescriptionField.dart';
+import 'package:hidden_gem/components/buildTextField.dart';
+import 'package:hidden_gem/components/profilePicture.dart';
+import 'package:hidden_gem/model/user.dart';
 import 'package:hidden_gem/screens/login_screen.dart';
-import 'package:hidden_gem/service/google_auth.dart';
+import 'package:hidden_gem/service/user_services.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
 
   @override
-  State<EditProfile> createState() => _ProfileScreenState();
+  State<EditProfile> createState() => EditProfileScreenState();
 }
 
-class _ProfileScreenState extends State<EditProfile> {
-  final _displayNameController = TextEditingController();
-  final _descriptionController = TextEditingController();
+class EditProfileScreenState extends State<EditProfile> {
+  UserService userService = UserService();
+  final displayNameController = TextEditingController();
+  final descriptionController = TextEditingController();
   bool isObscurePassword = true;
-
-  final _user = FirebaseAuth.instance.currentUser;
-  final _firestore = FirebaseFirestore.instance;
+  AppUser? currentUser;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    loadUserData();
   }
 
-  Future<void> _loadUserData() async {
-    if (_user == null) return;
-    final doc = await _firestore.collection('users').doc(_user!.uid).get();
-
-    if (doc.exists) {
-      final data = doc.data()!;
-      setState(() {
-        _displayNameController.text = data['displayName'] ?? '';
-        _descriptionController.text = data['description'] ?? '';
-      });
-    }
-  }
-
-  Future<void> _saveProfile() async {
-    if (_user == null) return;
-    try {
-      await _firestore.collection('users').doc(_user!.uid).update({
-        'displayName': _displayNameController.text,
-        'description': _descriptionController.text,
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
-    }
+  Future<void> loadUserData() async {
+    final user = await userService.getLoggedInUserData();
+    setState(() {
+      currentUser = user;
+      displayNameController.text = user.displayName;
+      descriptionController.text = user.description;
+    });
   }
 
   @override
   void dispose() {
-    _displayNameController.dispose();
-    _descriptionController.dispose();
+    displayNameController.dispose();
+    descriptionController.dispose();
     super.dispose();
   }
 
@@ -85,50 +66,17 @@ class _ProfileScreenState extends State<EditProfile> {
         padding: const EdgeInsets.all(15),
         child: ListView(
           children: [
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 130,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 4, color: Colors.white),
-                      boxShadow: [
-                        BoxShadow(
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                          color: Colors.black.withOpacity(0.1),
-                        ),
-                      ],
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: FirebaseService().getUserImage(),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(width: 4, color: Colors.white),
-                        color: Colors.blue,
-                      ),
-                      child: const Icon(Icons.edit, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            profilePicture(currentUser!.photoUrl),
             const SizedBox(height: 30),
-            buildTextField("Display Name", _displayNameController),
-            buildDescriptionField("Description", _descriptionController),
+            buildTextField("Display Name", displayNameController),
+            buildDescriptionField("Description", descriptionController),
             ElevatedButton(
-              onPressed: _saveProfile,
+              onPressed: () {
+                userService.saveProfile(
+                  displayNameController.text,
+                  descriptionController.text,
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 shape: RoundedRectangleBorder(
@@ -138,52 +86,6 @@ class _ProfileScreenState extends State<EditProfile> {
               child: const Text("Save", style: TextStyle(color: Colors.black)),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildTextField(String labelText, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 30),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: labelText,
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          contentPadding: const EdgeInsets.only(bottom: 5),
-          hintText: labelText,
-          hintStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildDescriptionField(
-    String labelText,
-    TextEditingController controller,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 30),
-      child: TextField(
-        controller: controller,
-        maxLines: 5,
-        decoration: InputDecoration(
-          alignLabelWithHint: true,
-          contentPadding: const EdgeInsets.all(10),
-          labelText: labelText,
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          hintText: labelText,
-          hintStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
-          ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
     );

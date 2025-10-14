@@ -1,9 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:hidden_gem/components/customButton.dart';
+import 'package:hidden_gem/components/profileGems.dart';
+import 'package:hidden_gem/components/profilePicture.dart';
+import 'package:hidden_gem/model/user.dart';
 import 'package:hidden_gem/screens/edit_profile_view.dart';
-import 'package:hidden_gem/service/google_auth.dart';
+import 'package:hidden_gem/service/user_services.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+  @override
+  @override
+  State<ProfileScreen> createState() => ProfileScreenState();
+}
+
+class ProfileScreenState extends State<ProfileScreen> {
+  UserService userService = UserService();
+  AppUser? currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final user = await userService.getLoggedInUserData();
+    setState(() {
+      currentUser = user;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,26 +43,7 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Container(
-                    width: 130,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 4, color: Colors.white),
-                      boxShadow: [
-                        BoxShadow(
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                          color: Colors.black.withOpacity(0.1),
-                        ),
-                      ],
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: FirebaseService().getUserImage(),
-                      ),
-                    ),
-                  ),
-                  // BUTTON
+                  profilePicture(currentUser!.photoUrl),
                   SizedBox(height: 15),
                   customButton("Go to Settings", () {
                     goToSettings(context);
@@ -50,41 +56,12 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
-            GridView.count(
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisCount: 3,
-              mainAxisSpacing: 5.0,
-              crossAxisSpacing: 5.0,
-              shrinkWrap: true,
-              children: List.generate(12, (index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(
-                        "https://www.bigfootdigital.co.uk/wp-content/uploads/2020/07/image-optimisation-scaled.jpg",
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                );
-              }),
-            ),
+            profileGems(),
           ],
         ),
       ),
     );
   }
-}
-
-Widget customButton(String buttonText, VoidCallback onPressed) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      minimumSize: const Size(120, 40),
-    ),
-    child: Text(buttonText),
-  );
 }
 
 void goToSettings(BuildContext context) {
