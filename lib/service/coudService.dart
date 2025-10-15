@@ -20,7 +20,6 @@ class CloudinaryService {
     return response.secureUrl;
   }
 
-  // Upload multiple images
   Future<List<String>> uploadImages(List<File> files) async {
     List<String> urls = [];
 

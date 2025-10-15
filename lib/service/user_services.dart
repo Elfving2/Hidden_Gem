@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:hidden_gem/model/comment.dart';
@@ -111,5 +113,29 @@ class UserService {
         .get();
 
     return AppUser.fromMap(userId, doc.data()!);
+  }
+
+  Future<bool> hasLikedPost(String postId) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .get();
+
+    final data = doc.data();
+
+    final List<dynamic> likes = data?['liked'] ?? [];
+    //print('Likes list: $likes');
+    if (likes.isEmpty) return false;
+
+    if (likes.contains(postId)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  String getUser() {
+    log(user!.uid);
+    return user!.uid;
   }
 }

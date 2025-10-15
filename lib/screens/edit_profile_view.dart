@@ -6,6 +6,7 @@ import 'package:hidden_gem/components/buildTextField.dart';
 import 'package:hidden_gem/components/profilePicture.dart';
 import 'package:hidden_gem/model/user.dart';
 import 'package:hidden_gem/screens/login_screen.dart';
+import 'package:hidden_gem/service/google_login_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
 class EditProfile extends StatefulWidget {
@@ -21,6 +22,7 @@ class EditProfileScreenState extends State<EditProfile> {
   final descriptionController = TextEditingController();
   bool isObscurePassword = true;
   AppUser? currentUser;
+  FirebaseService firebaseService = FirebaseService();
 
   @override
   void initState() {
@@ -53,8 +55,10 @@ class EditProfileScreenState extends State<EditProfile> {
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              await GoogleSignIn().signOut();
+              await firebaseService.signOut();
+
+              if (!mounted) return;
+
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => LoginScreen()),
               );
