@@ -38,27 +38,35 @@ class ProfileScreenState extends State<ProfileScreen> {
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Center(
-              child: Column(
+        child: currentUser == null
+            ? SizedBox(
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: const Center(child: CircularProgressIndicator()),
+              )
+            : Column(
                 children: [
-                  profilePicture(currentUser!.photoUrl),
-                  SizedBox(height: 15),
-                  customButton("Go to Settings", () {
-                    goToSettings(context);
-                  }),
-                  SizedBox(height: 30),
-                  Text(
-                    "Gallery",
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  Center(
+                    child: Column(
+                      children: [
+                        profilePicture(currentUser!.photoUrl),
+                        SizedBox(height: 15),
+                        customButton("Go to Settings", () {
+                          goToSettings(context);
+                        }),
+                        SizedBox(height: 30),
+                        Text(
+                          "Gallery",
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  profileGems(),
                 ],
               ),
-            ),
-            profileGems(),
-          ],
-        ),
       ),
     );
   }

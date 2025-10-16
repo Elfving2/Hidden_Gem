@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';

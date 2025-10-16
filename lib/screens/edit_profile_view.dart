@@ -1,6 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hidden_gem/components/buildDescriptionField.dart';
 import 'package:hidden_gem/components/buildTextField.dart';
 import 'package:hidden_gem/components/profilePicture.dart';
@@ -68,29 +66,37 @@ class EditProfileScreenState extends State<EditProfile> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(15),
-        child: ListView(
-          children: [
-            profilePicture(currentUser!.photoUrl),
-            const SizedBox(height: 30),
-            buildTextField("Display Name", displayNameController),
-            buildDescriptionField("Description", descriptionController),
-            ElevatedButton(
-              onPressed: () {
-                userService.saveProfile(
-                  displayNameController.text,
-                  descriptionController.text,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
+        child: currentUser == null
+            ? SizedBox(
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: const Center(child: CircularProgressIndicator()),
+              )
+            : ListView(
+                children: [
+                  profilePicture(currentUser!.photoUrl),
+                  const SizedBox(height: 30),
+                  buildTextField("Display Name", displayNameController),
+                  buildDescriptionField("Description", descriptionController),
+                  ElevatedButton(
+                    onPressed: () {
+                      userService.saveProfile(
+                        displayNameController.text,
+                        descriptionController.text,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                    child: const Text(
+                      "Save",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ],
               ),
-              child: const Text("Save", style: TextStyle(color: Colors.black)),
-            ),
-          ],
-        ),
       ),
     );
   }

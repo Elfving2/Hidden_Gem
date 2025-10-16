@@ -6,7 +6,6 @@ import 'package:rxdart/rxdart.dart';
 
 class HiddenGemService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final user = FirebaseAuth.instance.currentUser;
   Future<bool> uploadHiddenGem(
     String name,
     String description,
@@ -40,6 +39,7 @@ class HiddenGemService {
   }
 
   Future<List> fetchFriendsGems() async {
+    final user = FirebaseAuth.instance.currentUser;
     final userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
@@ -53,12 +53,14 @@ class HiddenGemService {
   }
 
   bool isUsersPost(String postOwner) {
+    final user = FirebaseAuth.instance.currentUser;
     if (postOwner == user!.uid) return true;
     return false;
   }
 
   Stream<List<HiddenGem>> getUserAndFriendsGems() {
     // Stream of your gems (private + public)
+    final user = FirebaseAuth.instance.currentUser;
     final myGemsStream = _firestore
         .collection('Gems')
         .where('ownerId', isEqualTo: user!.uid)
@@ -167,17 +169,18 @@ class HiddenGemService {
   Future<void> deleteGemFromLiked(String gemId) async {
     final usersSnapshot = await _firestore
         .collection('users')
-        .where('likes', arrayContains: gemId)
+        .where('liked', arrayContains: gemId)
         .get();
 
     for (final doc in usersSnapshot.docs) {
       await doc.reference.update({
-        'likes': FieldValue.arrayRemove([gemId]),
+        'liked': FieldValue.arrayRemove([gemId]),
       });
     }
   }
 
   Future<void> removeGemFromOwner(String gemId) async {
+    final user = FirebaseAuth.instance.currentUser;
     await _firestore.collection('users').doc(user!.uid).update({
       'gems': FieldValue.arrayRemove([gemId]),
     });

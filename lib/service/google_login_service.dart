@@ -4,7 +4,6 @@ import 'package:hidden_gem/service/user_services.dart';
 
 class FirebaseService {
   final GoogleSignIn googleSignIn = GoogleSignIn();
-  final user = FirebaseAuth.instance.currentUser;
   final UserService userService = UserService();
 
   Future<UserCredential?> signInWithGoogle() async {

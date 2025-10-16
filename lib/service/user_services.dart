@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:hidden_gem/model/comment.dart';
@@ -7,7 +5,8 @@ import 'package:hidden_gem/model/user.dart';
 
 class UserService {
   final _firestore = FirebaseFirestore.instance;
-  final user = auth.FirebaseAuth.instance.currentUser;
+  // cant do like this dosent change when i logout
+  //final user = auth.FirebaseAuth.instance.currentUser;
 
   Future<void> createUserIfNotExists(auth.User firebaseUser) async {
     final userRef = _firestore.collection('users').doc(firebaseUser.uid);
@@ -33,6 +32,7 @@ class UserService {
   }
 
   Future<bool> sendFriendRequest(String fromUserId) async {
+    final user = auth.FirebaseAuth.instance.currentUser;
     if (fromUserId == user!.uid) return false;
 
     await FirebaseFirestore.instance.collection('friend_requests').add({
@@ -45,6 +45,7 @@ class UserService {
   }
 
   Future<void> addToLiked(String postId) async {
+    final user = auth.FirebaseAuth.instance.currentUser;
     final userRef = _firestore.collection('users');
 
     // Add each other to the 'friends' arrays
@@ -55,8 +56,8 @@ class UserService {
     ]);
   }
 
-  // Heart is not staying red when reload have to check for a solution on that mby save in database who knows
   Future<void> removeLiked(String postId) async {
+    final user = auth.FirebaseAuth.instance.currentUser;
     final userRef = _firestore.collection('users');
 
     await userRef.doc(user!.uid).update({
@@ -65,6 +66,7 @@ class UserService {
   }
 
   Future<void> commentOnPost(String message, String postId) async {
+    final user = auth.FirebaseAuth.instance.currentUser;
     await FirebaseFirestore.instance.collection('post_comments').add({
       'message': message,
       'userId': user!.uid,
@@ -90,6 +92,7 @@ class UserService {
   }
 
   Future<AppUser> getLoggedInUserData() async {
+    final user = auth.FirebaseAuth.instance.currentUser;
     final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
@@ -98,6 +101,7 @@ class UserService {
   }
 
   Future<bool> saveProfile(String newName, String newDescription) async {
+    final user = auth.FirebaseAuth.instance.currentUser;
     if (newName == "" || newDescription == "") return false;
     await _firestore.collection('users').doc(user!.uid).update({
       'displayName': newName,
@@ -116,6 +120,7 @@ class UserService {
   }
 
   Future<bool> hasLikedPost(String postId) async {
+    final user = auth.FirebaseAuth.instance.currentUser;
     final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
@@ -124,7 +129,7 @@ class UserService {
     final data = doc.data();
 
     final List<dynamic> likes = data?['liked'] ?? [];
-    //print('Likes list: $likes');
+
     if (likes.isEmpty) return false;
 
     if (likes.contains(postId)) {
@@ -135,7 +140,8 @@ class UserService {
   }
 
   String getUser() {
-    log(user!.uid);
-    return user!.uid;
+    final user = auth.FirebaseAuth.instance.currentUser;
+    print("USERID:  ${user!.uid}");
+    return user.uid;
   }
 }
