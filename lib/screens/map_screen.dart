@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hidden_gem/components/addHiddenGem.dart';
-import 'package:hidden_gem/components/displayGem.dart';
+import 'package:hidden_gem/components/gemWidget.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 import 'package:location/location.dart';
@@ -57,7 +57,10 @@ class MapWidgetState extends State<MapWidget> {
           ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed)
           : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
       onTap: () {
-        displayGem(context, gem);
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(child: gemWidget(context, gem)),
+        );
       },
     );
   }
@@ -91,7 +94,7 @@ class MapWidgetState extends State<MapWidget> {
 
           if (pickingLocation)
             Positioned(
-              bottom: 40,
+              bottom: 80,
               left: 20,
               right: 20,
               child: ElevatedButton(

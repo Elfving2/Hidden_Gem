@@ -86,7 +86,14 @@ Widget commentSection(BuildContext context, String postId) {
                                       ),
                                     ),
                                     title: Text(user.displayName),
-                                    subtitle: Text(comment.message),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(comment.createdAt),
+                                        Text(comment.message),
+                                      ],
+                                    ),
                                   );
                                 },
                               );

@@ -18,6 +18,7 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   bool isPublic = true;
+  HiddenGemService hiddenGemService = HiddenGemService();
 
   @override
   void dispose() {
@@ -59,7 +60,7 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
               decoration: const InputDecoration(
                 hintText: "Hidden Gem description",
               ),
-              maxLines: 5,
+              maxLines: 3,
             ),
             Container(
               height: 100,
@@ -123,7 +124,7 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Switch(
@@ -141,6 +142,29 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
               onPressed: () async {
                 final name = nameController.text;
                 final description = descriptionController.text;
+
+                String validate = hiddenGemService.validateGem(
+                  name,
+                  description,
+                  images,
+                );
+
+                if (validate.isNotEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Missing information'),
+                      content: Text(validate),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                  return;
+                }
 
                 List<String> stringImages = await CloudinaryService()
                     .uploadImages(images);
@@ -164,7 +188,7 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
                 );
 
                 if (result) {
-                  Navigator.of(context).pop(); // close dialog
+                  Navigator.of(context).pop();
                 }
               },
               child: const Text("Create"),

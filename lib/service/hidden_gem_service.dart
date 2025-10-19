@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -23,6 +25,7 @@ class HiddenGemService {
         "longitude": selectedPosition.longitude,
         "ownerId": user!.uid,
         "isPublic": isPublic,
+        "likes": 0,
       });
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).update(
@@ -77,6 +80,7 @@ class HiddenGemService {
               imageUrls: List<String>.from(data['images'] ?? []),
               ownerId: data['ownerId'],
               isPublic: data['isPublic'],
+              likes: data['likes'],
             );
           }).toList(),
         );
@@ -84,7 +88,7 @@ class HiddenGemService {
     // Stream of friends' public gems
     final friendsStream = FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
+        .doc(user.uid)
         .snapshots()
         .switchMap((userDoc) {
           final likedIds = List<String>.from(userDoc.data()?['liked'] ?? []);
@@ -111,6 +115,7 @@ class HiddenGemService {
                     imageUrls: List<String>.from(data['images'] ?? []),
                     ownerId: data['ownerId'],
                     isPublic: data['isPublic'],
+                    likes: data['likes'],
                   );
                 }).toList(),
               );
@@ -157,6 +162,7 @@ class HiddenGemService {
               imageUrls: List<String>.from(data['images'] ?? []),
               ownerId: data['ownerId'],
               isPublic: data['isPublic'],
+              likes: data['likes'],
             );
           }).toList();
         });
@@ -195,5 +201,53 @@ class HiddenGemService {
     for (final doc in querySnapshot.docs) {
       await doc.reference.delete();
     }
+  }
+
+  Stream<List<HiddenGem>> getUsersGems() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return FirebaseFirestore.instance
+        .collection('Gems')
+        .where('ownerId', isEqualTo: user!.uid)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            return HiddenGem(
+              id: doc.id,
+              name: data['name'],
+              description: data['description'],
+              latitude: data['latitude'],
+              longitude: data['longitude'],
+              imageUrls: List<String>.from(data['images'] ?? []),
+              ownerId: data['ownerId'],
+              isPublic: data['isPublic'],
+              likes: data['likes'],
+            );
+          }).toList();
+        });
+  }
+
+  Future<void> likePost(String postId) async {
+    final userRef = _firestore.collection('Gems');
+
+    await Future.wait([
+      userRef.doc(postId).update({'likes': FieldValue.increment(1)}),
+    ]);
+  }
+
+  Future<void> deLikePost(String postId) async {
+    final userRef = _firestore.collection('Gems');
+
+    await userRef.doc(postId).update({'likes': FieldValue.increment(-1)});
+  }
+
+  String validateGem(String name, String description, List<File> images) {
+    if (name.isEmpty) return "Please enter a name!";
+
+    if (description.isEmpty) return "Please enter a description!";
+
+    if (images.isEmpty) return "Please add atleast one image!";
+    return "";
   }
 }

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hidden_gem/components/commentSection.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/model/user.dart';
+import 'package:hidden_gem/service/hidden_gem_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
 Widget postWidget(HiddenGem gem, BuildContext context) {
   final UserService userService = UserService();
+  final HiddenGemService hiddenGemService = HiddenGemService();
   final isFavorite = ValueNotifier<bool>(false);
   bool isFavoriteInitialized = false;
 
@@ -39,16 +41,27 @@ Widget postWidget(HiddenGem gem, BuildContext context) {
           },
         ),
         const SizedBox(height: 10),
-        Container(
+        SizedBox(
           height: 300,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            image: DecorationImage(
-              image: NetworkImage(gem.imageUrls[0]),
-              fit: BoxFit.cover,
-            ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: gem.imageUrls.length,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 5),
+                width: MediaQuery.of(context).size.width * 0.94,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: NetworkImage(gem.imageUrls[index]),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              );
+            },
           ),
         ),
+
         const SizedBox(height: 10),
         FutureBuilder<bool>(
           future: userService.hasLikedPost(gem.id),
@@ -67,21 +80,28 @@ Widget postWidget(HiddenGem gem, BuildContext context) {
               builder: (context, value, _) {
                 return Row(
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.favorite,
-                        color: value ? Colors.red : Colors.grey,
-                      ),
-                      onPressed: () async {
-                        final newValue = !value;
-                        isFavorite.value = newValue;
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.favorite,
+                            color: value ? Colors.red : Colors.grey,
+                          ),
+                          onPressed: () async {
+                            final newValue = !value;
+                            isFavorite.value = newValue;
 
-                        if (newValue) {
-                          await userService.addToLiked(gem.id);
-                        } else {
-                          await userService.removeLiked(gem.id);
-                        }
-                      },
+                            if (newValue) {
+                              await userService.addToLiked(gem.id);
+                              await hiddenGemService.likePost(gem.id);
+                            } else {
+                              await userService.removeLiked(gem.id);
+                              await hiddenGemService.deLikePost(gem.id);
+                            }
+                          },
+                        ),
+                        Text("${gem.likes}"),
+                      ],
                     ),
                     const SizedBox(width: 10),
                     IconButton(

@@ -7,6 +7,7 @@ class HiddenGem {
   final List<String> imageUrls;
   final String ownerId;
   final bool isPublic;
+  final int likes;
 
   HiddenGem({
     required this.id,
@@ -17,5 +18,6 @@ class HiddenGem {
     required this.imageUrls,
     required this.ownerId,
     required this.isPublic,
+    required this.likes,
   });
 }

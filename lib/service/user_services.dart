@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:hidden_gem/model/comment.dart';
 import 'package:hidden_gem/model/user.dart';
+import 'package:intl/intl.dart';
 
 class UserService {
   final _firestore = FirebaseFirestore.instance;
@@ -36,7 +37,7 @@ class UserService {
     if (fromUserId == user!.uid) return false;
 
     await FirebaseFirestore.instance.collection('friend_requests').add({
-      'fromUserId': user!.uid,
+      'fromUserId': user.uid,
       'toUserId': fromUserId,
       'status': 'pending',
       'timestamp': FieldValue.serverTimestamp(),
@@ -71,6 +72,7 @@ class UserService {
       'message': message,
       'userId': user!.uid,
       'postId': postId,
+      'createdAt': DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now()),
     });
   }
 
@@ -86,6 +88,7 @@ class UserService {
               message: data['message'],
               userId: data['userId'],
               postId: data['postId'],
+              createdAt: data['createdAt'],
             );
           }).toList(),
         );
@@ -97,7 +100,7 @@ class UserService {
         .collection('users')
         .doc(user!.uid)
         .get();
-    return AppUser.fromMap(user!.uid, doc.data()!);
+    return AppUser.fromMap(user.uid, doc.data()!);
   }
 
   Future<bool> saveProfile(String newName, String newDescription) async {

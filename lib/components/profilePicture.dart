@@ -23,20 +23,6 @@ Widget profilePicture(String photoUrl) {
             ),
           ),
         ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(width: 4, color: Colors.white),
-              color: Colors.blue,
-            ),
-            child: const Icon(Icons.edit, color: Colors.white),
-          ),
-        ),
       ],
     ),
   );
