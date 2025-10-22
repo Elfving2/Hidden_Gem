@@ -19,7 +19,7 @@ class EditProfileScreenState extends State<EditProfile> {
   final displayNameController = TextEditingController();
   final descriptionController = TextEditingController();
   bool isObscurePassword = true;
-  AppUser? currentUser;
+  User? currentUser;
   FirebaseService firebaseService = FirebaseService();
 
   @override
@@ -73,9 +73,9 @@ class EditProfileScreenState extends State<EditProfile> {
               )
             : ListView(
                 children: [
-                  profilePicture(currentUser!.photoUrl),
+                  UserAvatar(imageUrl: currentUser!.photoUrl),
                   const SizedBox(height: 30),
-                  buildTextField("Display Name", displayNameController),
+                  textInput("Display Name", displayNameController),
                   buildDescriptionField("Description", descriptionController),
                   ElevatedButton(
                     onPressed: () {

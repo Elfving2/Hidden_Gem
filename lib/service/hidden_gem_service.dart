@@ -6,6 +6,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:rxdart/rxdart.dart';
 
+/*
+  REDO THIS WHOLE THING
+  AI DETECTED
+
+ */
 class HiddenGemService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Future<bool> uploadHiddenGem(
@@ -62,7 +67,6 @@ class HiddenGemService {
   }
 
   Stream<List<HiddenGem>> getUserAndFriendsGems() {
-    // Stream of your gems (private + public)
     final user = FirebaseAuth.instance.currentUser;
     final myGemsStream = _firestore
         .collection('Gems')

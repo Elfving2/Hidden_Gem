@@ -1,80 +1,74 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:hidden_gem/components/friendRequest.dart';
 import 'package:hidden_gem/service/friend_request_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
-final UserService userService = UserService();
+final _userService = UserService();
 
-Future<void> addPerson(
+Future<void> showAddFriendDialog(
   BuildContext context,
-  TextEditingController emailController,
-  FriendRequestService friendRequestService,
+  TextEditingController controller,
+  FriendRequestService requestService,
 ) async {
   await showDialog(
     context: context,
     builder: (_) => AlertDialog(
       title: const Text("Add Friend"),
       content: SizedBox(
-        width: double.maxFinite,
+        width: double.infinity,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: emailController,
-              decoration: const InputDecoration(hintText: "email@example.com"),
+              controller: controller,
+              decoration: const InputDecoration(hintText: "example@email.com"),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () async {
-                final email = emailController.text.trim();
-                final uid = await userService.getUserIdByEmail(email);
-
-                if (uid == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("User not found")),
-                  );
-                  return;
-                }
-
-                String message = "Something went wrong!";
-                if (await userService.sendFriendRequest(uid)) {
-                  message = "Friend request sent successfully!";
-                }
-
-                Navigator.of(context).pop(); // Close dialog
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(message)));
-              },
-              child: const Text("Send Friend Request"),
+              onPressed: () =>
+                  _sendRequest(context, controller, requestService),
+              child: const Text("Send"),
             ),
             const SizedBox(height: 16),
             SizedBox(
+              width: 400,
               height: 250,
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: friendRequestService.getIncomingFriendRequests(),
+                stream: requestService.getIncomingFriendRequests(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  final requests = snapshot.data!;
-                  if (requests.isEmpty) {
-                    return const Center(
-                      child: Text("No pending friend requests"),
-                    );
+
+                  final data = snapshot.data!;
+                  if (data.isEmpty) {
+                    return const Center(child: Text("No requests"));
                   }
+                  log("Data: ${data}");
 
                   return ListView.builder(
-                    itemCount: requests.length,
-                    itemBuilder: (context, index) {
-                      final req = requests[index];
-                      return MockupFriendRequest(
-                        req['displayName'] ?? "Unknown User",
-                        req['photoUrl'] ?? 'https://via.placeholder.com/150',
-                        onAccept: () => friendRequestService
-                            .updateRequestStatus(req['requestId'], "accept"),
-                        onDecline: () => friendRequestService
-                            .updateRequestStatus(req['requestId'], "decline"),
+                    itemCount: data.length,
+                    itemBuilder: (context, i) {
+                      final dataResult = data[i];
+                      print("RESULT: ${dataResult}");
+                      return FriendRequestCard(
+                        fullName: dataResult['displayName'],
+                        profilePicture: dataResult['photoUrl'],
+                        onAccept: () {
+                          print(dataResult['requestId']);
+                          requestService.updateRequestStatus(
+                            dataResult['requestId'],
+                            "accept",
+                          );
+                        },
+                        onDecline: () {
+                          requestService.updateRequestStatus(
+                            dataResult['requestId'],
+                            "decline",
+                          );
+                        },
                       );
                     },
                   );
@@ -86,4 +80,27 @@ Future<void> addPerson(
       ),
     ),
   );
+}
+
+Future<void> _sendRequest(
+  BuildContext context,
+  TextEditingController controller,
+  FriendRequestService service,
+) async {
+  final email = controller.text.trim();
+  if (email.isEmpty) return;
+
+  final uid = await _userService.getUserIdByEmail(email);
+  if (uid == null) {
+    _snack(context, "User not found");
+    return;
+  }
+
+  final ok = await _userService.sendFriendRequest(uid);
+  Navigator.of(context).pop();
+  _snack(context, ok ? "Request sent" : "Something went wrong");
+}
+
+void _snack(BuildContext context, String msg) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 }

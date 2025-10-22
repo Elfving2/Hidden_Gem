@@ -59,7 +59,7 @@ class MapWidgetState extends State<MapWidget> {
       onTap: () {
         showDialog(
           context: context,
-          builder: (context) => Dialog(child: gemWidget(context, gem)),
+          builder: (context) => Dialog(child: HiddenGemCard(gem: gem)),
         );
       },
     );
@@ -104,7 +104,7 @@ class MapWidgetState extends State<MapWidget> {
                     showDialog(
                       context: context,
                       builder: (context) {
-                        return AddHiddenGem(selectedPosition: selectedPosition);
+                        return addHiddenGem(selectedPosition: selectedPosition);
                       },
                     );
                   }

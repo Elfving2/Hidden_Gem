@@ -4,6 +4,9 @@ import 'package:hidden_gem/model/comment.dart';
 import 'package:hidden_gem/model/user.dart';
 import 'package:intl/intl.dart';
 
+/*
+  AI DETECTED
+*/
 class UserService {
   final _firestore = FirebaseFirestore.instance;
   // cant do like this dosent change when i logout
@@ -14,7 +17,7 @@ class UserService {
     final doc = await userRef.get();
 
     if (!doc.exists) {
-      final appUser = AppUser.fromAuthUser(firebaseUser);
+      final appUser = User.fromAuthUser(firebaseUser);
       await userRef.set(appUser.toMap());
     }
   }
@@ -94,13 +97,13 @@ class UserService {
         );
   }
 
-  Future<AppUser> getLoggedInUserData() async {
+  Future<User> getLoggedInUserData() async {
     final user = auth.FirebaseAuth.instance.currentUser;
     final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
         .get();
-    return AppUser.fromMap(user.uid, doc.data()!);
+    return User.fromMap(user.uid, doc.data()!);
   }
 
   Future<bool> saveProfile(String newName, String newDescription) async {
@@ -113,13 +116,13 @@ class UserService {
     return true;
   }
 
-  Future<AppUser> getUserById(String userId) async {
+  Future<User> getUserById(String userId) async {
     final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .get();
 
-    return AppUser.fromMap(userId, doc.data()!);
+    return User.fromMap(userId, doc.data()!);
   }
 
   Future<bool> hasLikedPost(String postId) async {

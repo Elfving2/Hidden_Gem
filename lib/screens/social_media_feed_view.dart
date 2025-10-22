@@ -36,7 +36,7 @@ class _SocialMediaFeedState extends State<SocialMediaFeed> {
             itemCount: gems.length,
             itemBuilder: (context, index) {
               final gem = gems[index];
-              return postWidget(gem, context);
+              return HiddenGemCard(gem: gem);
             },
           );
         },

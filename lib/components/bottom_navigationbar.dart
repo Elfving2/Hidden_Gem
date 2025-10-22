@@ -33,9 +33,9 @@ class BottomNavigationbar extends StatelessWidget {
   }
 }
 
+// where everything happends
 class NavigationController extends GetxController {
   final Rx<int> selectedIndex = 3.obs;
-  // add screens
   final screens = [
     MapPage(),
     const SocialMediaFeed(),

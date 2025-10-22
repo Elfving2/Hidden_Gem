@@ -3,61 +3,76 @@ import 'package:hidden_gem/components/gemWidget.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 
-Widget profileGems() {
-  HiddenGemService hiddenGemService = HiddenGemService();
-  return StreamBuilder<List<HiddenGem>>(
-    stream: hiddenGemService.getUsersGems(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      }
+class ProfileGemsGrid extends StatelessWidget {
+  const ProfileGemsGrid({super.key});
 
-      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-        return const Center(child: Text("No gems found"));
-      }
+  @override
+  Widget build(BuildContext context) {
+    final gemService = HiddenGemService();
 
-      final gems = snapshot.data!;
+    return StreamBuilder<List<HiddenGem>>(
+      stream: gemService.getUsersGems(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-      return GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: gems.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          mainAxisSpacing: 5.0,
-          crossAxisSpacing: 5.0,
+        if (snapshot.hasError) {
+          return const Center(child: Text("Failed to load gems."));
+        }
+
+        final gems = snapshot.data ?? [];
+
+        if (gems.isEmpty) {
+          return const Center(child: Text("You haven't added any gems yet."));
+        }
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(8),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: gems.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 6,
+            mainAxisSpacing: 6,
+          ),
+          itemBuilder: (context, index) {
+            final gem = gems[index];
+            return _GemTile(gem: gem);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _GemTile extends StatelessWidget {
+  final HiddenGem gem;
+
+  const _GemTile({required this.gem});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => Dialog(
+            insetPadding: const EdgeInsets.all(16),
+            child: HiddenGemCard(gem: gem),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          image: DecorationImage(
+            image: NetworkImage(gem.imageUrls.first),
+            fit: BoxFit.cover,
+          ),
         ),
-        itemBuilder: (context, index) {
-          final gem = gems[index];
-          return ElevatedButton(
-            onPressed: () {
-              print("PRESSED");
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(content: gemWidget(context, gem));
-                },
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.zero,
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(0),
-              ),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(gem.imageUrls[0]),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    },
-  );
+      ),
+    );
+  }
 }

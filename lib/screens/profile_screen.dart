@@ -15,7 +15,7 @@ class ProfileScreen extends StatefulWidget {
 
 class ProfileScreenState extends State<ProfileScreen> {
   UserService userService = UserService();
-  AppUser? currentUser;
+  User? currentUser;
 
   @override
   void initState() {
@@ -48,11 +48,15 @@ class ProfileScreenState extends State<ProfileScreen> {
                   Center(
                     child: Column(
                       children: [
-                        profilePicture(currentUser!.photoUrl),
+                        UserAvatar(imageUrl: currentUser!.photoUrl),
                         SizedBox(height: 15),
-                        customButton("Go to Settings", () {
-                          goToSettings(context);
-                        }),
+                        PrimaryButton(
+                          label: 'Go to settings',
+                          onPressed: () {
+                            goToSettings(context);
+                          },
+                        ),
+
                         SizedBox(height: 30),
                         Text(
                           "Gallery",
@@ -64,7 +68,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  profileGems(),
+                  ProfileGemsGrid(),
                 ],
               ),
       ),

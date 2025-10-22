@@ -30,7 +30,11 @@ class FriendsViewState extends State<FriendsView> {
           IconButton(
             icon: const Icon(Icons.person_add),
             onPressed: () {
-              addPerson(context, emailController, friendRequestService);
+              showAddFriendDialog(
+                context,
+                emailController,
+                friendRequestService,
+              );
             },
           ),
         ],
@@ -52,11 +56,10 @@ class FriendsViewState extends State<FriendsView> {
             itemCount: friends.length,
             itemBuilder: (context, index) {
               final friend = friends[index];
-              return MockupFriend(
-                friend['displayName'],
-                friend['photoUrl'],
-                friend['uid'],
-                friendRequestService,
+              return FriendTile(
+                fullName: friend['displayName'],
+                profilePicture: friend['photoUrl'],
+                uid: friend['uid'],
               );
             },
           );

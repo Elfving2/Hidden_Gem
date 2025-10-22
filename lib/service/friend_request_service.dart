@@ -1,49 +1,69 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hidden_gem/components/addPerson.dart';
+import 'package:hidden_gem/service/user_services.dart';
 
+/* 
+  Friend request service 
+*/
 class FriendRequestService {
-  final _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final firestore = FirebaseFirestore.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  UserService userService = UserService();
 
-  Stream<List<Map<String, dynamic>>> getIncomingFriendRequests() {
-    return _firestore
+  /* 
+  fetch all pending fromUiserIds from currently logged in user 
+*/
+  Future<Map<String, String>> getPendingFriendRequestUid() async {
+    final snapshot = await firestore
         .collection('friend_requests')
-        .where('toUserId', isEqualTo: _auth.currentUser!.uid)
+        .where('toUserId', isEqualTo: auth.currentUser!.uid)
         .where('status', isEqualTo: 'pending')
-        .snapshots()
-        .asyncMap((snapshot) async {
-          // For each friend request, also fetch user info
-          final requests = await Future.wait(
-            snapshot.docs.map((doc) async {
-              final data = doc.data();
-              data['requestId'] = doc.id;
+        .get();
 
-              // Fetch the sender’s user document
-              final fromUserRef = _firestore
-                  .collection('users')
-                  .doc(data['fromUserId']);
-              final fromUserSnap = await fromUserRef.get();
+    final Map<String, String> requests = {
+      for (var doc in snapshot.docs) doc.id: doc.data()['fromUserId'] as String,
+    };
 
-              if (fromUserSnap.exists) {
-                final fromUserData = fromUserSnap.data()!;
-                data['displayName'] =
-                    fromUserData['displayName'] ?? 'Unknown User';
-                data['photoUrl'] =
-                    fromUserData['photoUrl'] ??
-                    'https://via.placeholder.com/150';
-                data['email'] = fromUserData['email'] ?? '';
-              }
-
-              return data;
-            }).toList(),
-          );
-          return requests;
-        });
+    return requests;
   }
 
-  // Can be both deny and accept
+  /*
+    return the requestId - the id of the friendRequest 
+    also return displayname and photo of the user sending the friend request
+   */
+  Stream<List<Map<String, dynamic>>> getIncomingFriendRequests() async* {
+    final uidPendingRequests = await getPendingFriendRequestUid();
+    print("uidPendingRequests: ${uidPendingRequests}");
+
+    if (uidPendingRequests.isEmpty) {
+      yield <Map<String, dynamic>>[];
+      return;
+    }
+
+    final requests = await Future.wait(
+      uidPendingRequests.entries.map((entry) async {
+        final requestId = entry.key;
+        final fromUserId = entry.value;
+
+        final user = await userService.getUserById(fromUserId);
+
+        return {
+          "requestId": requestId,
+          "displayName": user.displayName,
+          "photoUrl": user.photoUrl,
+        };
+      }),
+    );
+
+    yield requests;
+  }
+
+  /*
+  "Generic" method that lets the user either deny och accept pending friend request
+  */
   Future<void> updateRequestStatus(String requestId, String status) async {
-    final requestRef = _firestore.collection('friend_requests').doc(requestId);
+    final requestRef = firestore.collection('friend_requests').doc(requestId);
     final requestSnapshot = await requestRef.get();
 
     if (!requestSnapshot.exists) return;
@@ -52,13 +72,10 @@ class FriendRequestService {
     final fromUid = data['fromUserId'];
     final toUid = data['toUserId'];
 
-    // Update the request status (accept or decline)
     await requestRef.update({'status': status});
 
     if (status == 'accept') {
-      final userRef = _firestore.collection('users');
-
-      // Add each other to the 'friends' arrays
+      final userRef = firestore.collection('users');
       await Future.wait([
         userRef.doc(fromUid).update({
           'friends': FieldValue.arrayUnion([toUid]),
@@ -70,11 +87,12 @@ class FriendRequestService {
     }
   }
 
+  // Get currently logged in users friends in a stream so we get updates in real time
   Stream<List<Map<String, dynamic>>> getFriendsStream() {
-    final currentUser = _auth.currentUser;
+    final currentUser = auth.currentUser;
     if (currentUser == null) return const Stream.empty();
 
-    return _firestore
+    return firestore
         .collection('users')
         .doc(currentUser.uid)
         .snapshots()
@@ -82,10 +100,9 @@ class FriendRequestService {
           List<dynamic> friendIdsDynamic = userDoc.data()?['friends'] ?? [];
           List<String> friendIds = friendIdsDynamic.cast<String>();
 
-          // Build a list of friend Futures
           return Future.wait(
             friendIds.map((friendId) async {
-              final friendDoc = await _firestore
+              final friendDoc = await firestore
                   .collection('users')
                   .doc(friendId)
                   .get();
@@ -105,18 +122,82 @@ class FriendRequestService {
         .asyncMap((event) async => await event);
   }
 
+  // Remove friend from friends array and remove currently logged in user from friends array
   Future<void> removeFriend(String friendUid) async {
-    final currentUser = _auth.currentUser;
+    final currentUser = auth.currentUser;
     final userRef = FirebaseFirestore.instance.collection('users');
 
-    // Remove friendUid from current user's friends array
     await userRef.doc(currentUser!.uid).update({
       'friends': FieldValue.arrayRemove([friendUid]),
     });
 
-    // Remove current user from friend's friends array
     await userRef.doc(friendUid).update({
       'friends': FieldValue.arrayRemove([currentUser.uid]),
     });
+  }
+
+  // fetch all friends gems so we can remove them from current users liked post
+  Future<List<String>> getFriendsGemsId(String friendUid) async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendUid)
+        .get();
+
+    final data = userDoc.data();
+    final gems = List<String>.from(data?['gems'] ?? []);
+    print("GEMS: ${gems}");
+    return gems;
+  }
+
+  /*
+    Remove friends gems from liked list when removing friend
+  */
+  Future<void> removeFriendsGemsFromCurrentlyLoggedInUsersLikedList(
+    String friendUid,
+  ) async {
+    final currentUser = auth.currentUser;
+    if (currentUser == null) return;
+
+    final myRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid);
+    final mySnap = await myRef.get();
+    final myData = mySnap.data();
+
+    final myLikedPosts = List<String>.from(myData?['liked'] ?? []);
+    final friendGemIds = await getFriendsGemsId(friendUid);
+
+    final postsToRemove = myLikedPosts.where(friendGemIds.contains).toList();
+    if (postsToRemove.isEmpty) return;
+
+    await myRef.update({'liked': FieldValue.arrayRemove(postsToRemove)});
+
+    print("Removed friend's gems: $postsToRemove");
+  }
+
+  /*
+    Remove currently logged in users gems from friends liked list when removing friend
+  */
+
+  Future<void> removeCurrentlyLoggedInUsersGemsFromFriendsLikedList(
+    String friendUid,
+  ) async {
+    final currentUser = auth.currentUser;
+
+    final friendRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendUid);
+    final friendSnap = await friendRef.get();
+    final friendData = friendSnap.data();
+
+    final friendLikedPosts = List<String>.from(friendData?['liked'] ?? []);
+    final myGemIds = await getFriendsGemsId(currentUser!.uid);
+
+    final postsToRemove = friendLikedPosts.where(myGemIds.contains).toList();
+    if (postsToRemove.isEmpty) return;
+
+    await friendRef.update({'liked': FieldValue.arrayRemove(postsToRemove)});
+
+    print("Removed my gems $postsToRemove");
   }
 }

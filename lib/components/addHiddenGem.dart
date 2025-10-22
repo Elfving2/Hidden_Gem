@@ -1,33 +1,38 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hidden_gem/service/coudService.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AddHiddenGem extends StatefulWidget {
+HiddenGemService hiddenGemService = HiddenGemService();
+CloudinaryService cloudinaryService = CloudinaryService();
+
+class addHiddenGem extends StatefulWidget {
   final selectedPosition;
 
-  const AddHiddenGem({super.key, required this.selectedPosition});
+  const addHiddenGem({super.key, required this.selectedPosition});
 
   @override
-  State<AddHiddenGem> createState() => _AddHiddenGemState();
+  State<addHiddenGem> createState() => _AddHiddenGemState();
 }
 
-class _AddHiddenGemState extends State<AddHiddenGem> {
+class _AddHiddenGemState extends State<addHiddenGem> {
   final List<File> images = [];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   bool isPublic = true;
-  HiddenGemService hiddenGemService = HiddenGemService();
 
   @override
   void dispose() {
+    // Dispose controllers when going to another page
     nameController.dispose();
     descriptionController.dispose();
     super.dispose();
   }
 
   Future<void> pickImage(ImageSource source) async {
+    // If there are 4 images dont add more.
     if (images.length == 4) return;
     final picked = await ImagePicker().pickImage(
       source: source,
@@ -52,64 +57,18 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(hintText: "Name of Hidden Gem"),
+              decoration: const InputDecoration(hintText: "Name"),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: descriptionController,
-              decoration: const InputDecoration(
-                hintText: "Hidden Gem description",
-              ),
+              decoration: const InputDecoration(hintText: "Description"),
               maxLines: 3,
             ),
             Container(
               height: 100,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: images.isEmpty
-                  ? const Center(child: Text("No images yet"))
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: List.generate(4, (index) {
-                        if (index >= images.length) {
-                          return Container(
-                            width: 58,
-                            height: 80,
-                            margin: const EdgeInsets.only(right: 8),
-                            color: Colors.grey[600],
-                          );
-                        }
-
-                        return Stack(
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 80,
-                              margin: const EdgeInsets.only(right: 8),
-                              child: Image.file(
-                                images[index],
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    images.removeAt(index);
-                                  });
-                                },
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.red,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
+              child: displayImages(images, context),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -158,24 +117,33 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('OK'),
+                          child: const Text('Ok'),
                         ),
                       ],
                     ),
                   );
                   return;
                 }
+                bool result = true;
 
-                List<String> stringImages = await CloudinaryService()
-                    .uploadImages(images);
-
-                bool result = await HiddenGemService().uploadHiddenGem(
-                  name,
-                  description,
-                  stringImages,
-                  widget.selectedPosition,
-                  isPublic,
-                );
+                /*
+                  Trying to uppload images to cloudinary
+                  if sucess display sucess text 
+                  else display something went wrong
+                */
+                try {
+                  List<String> imageUrls = await cloudinaryService
+                      .uploadImagesToCloudinary(images);
+                  await hiddenGemService.uploadHiddenGem(
+                    name,
+                    description,
+                    imageUrls,
+                    widget.selectedPosition,
+                    isPublic,
+                  );
+                } catch (e) {
+                  result = false;
+                }
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -197,5 +165,53 @@ class _AddHiddenGemState extends State<AddHiddenGem> {
         ),
       ),
     );
+  }
+
+  Widget displayImages(List<File> images, BuildContext context) {
+    if (images.isNotEmpty) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: List.generate(4, (index) {
+          log("Images Length: ${images.length}");
+          log("Index: ${index}");
+          if (index >= images.length) {
+            return Container(
+              width: 58,
+              height: 80,
+              margin: const EdgeInsets.only(right: 8),
+              color: Colors.grey[600],
+            );
+          }
+
+          /* 
+            Images display "box" can remove image by pressing red x
+            to small?
+          */
+          return Stack(
+            children: [
+              Container(
+                width: 60,
+                height: 80,
+                margin: const EdgeInsets.only(right: 8),
+                child: Image.file(images[index], fit: BoxFit.cover),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      images.removeAt(index);
+                    });
+                  },
+                  child: const Icon(Icons.close, color: Colors.red, size: 20),
+                ),
+              ),
+            ],
+          );
+        }),
+      );
+    }
+    return const Center(child: Text("No image choosen"));
   }
 }

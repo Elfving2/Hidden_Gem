@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 
-class AppUser {
+class User {
   final String id;
   final String displayName;
   final String photoUrl;
@@ -11,7 +11,7 @@ class AppUser {
   final List<String> gems;
   final List<String> liked;
 
-  AppUser({
+  User({
     required this.id,
     required this.displayName,
     required this.photoUrl,
@@ -22,11 +22,11 @@ class AppUser {
     required this.liked,
   });
 
-  factory AppUser.fromAuthUser(auth.User user) {
-    return AppUser(
+  factory User.fromAuthUser(auth.User user) {
+    return User(
       id: user.uid,
       displayName: user.displayName ?? '',
-      photoUrl: user.photoURL ?? '', // ill send in another image
+      photoUrl: user.photoURL ?? '',
       email: user.email ?? '',
       description: '',
       friends: [],
@@ -46,8 +46,8 @@ class AppUser {
     };
   }
 
-  factory AppUser.fromMap(String id, Map<String, dynamic> map) {
-    return AppUser(
+  factory User.fromMap(String id, Map<String, dynamic> map) {
+    return User(
       id: id,
       displayName: map['displayName'] ?? '',
       photoUrl: map['photoUrl'] ?? '',
