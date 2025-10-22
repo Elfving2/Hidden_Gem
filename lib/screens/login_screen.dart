@@ -10,6 +10,12 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => LoginViewState();
 }
 
+/*
+  Prety simple when logging out or being a new user you get to this page
+  Login view google and then create a user with User model format, when logging in get pushed to the
+  "heart" of the app bottom navigation bar
+*/
+
 class LoginViewState extends State<LoginScreen> {
   final authService = FirebaseService();
 

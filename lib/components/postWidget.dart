@@ -5,6 +5,13 @@ import 'package:hidden_gem/model/user.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
+/*
+  Displays the post of friends gems 
+  * Displays owner profile info (image, name)
+  * allows user to like and de-like post
+  * user can comment on post if wanted 
+  * if the current logged in user is the owner allow delete of post.
+*/
 class HiddenGemCard extends StatefulWidget {
   final HiddenGem gem;
   const HiddenGemCard({super.key, required this.gem});
@@ -162,9 +169,6 @@ class _HiddenGemCardState extends State<HiddenGemCard> {
     return ValueListenableBuilder<bool>(
       valueListenable: _isFavorite,
       builder: (context, liked, _) {
-        // If init hasn’t completed yet, keep the section minimal to avoid flicker
-        //if (!_likeInitDone) return const SizedBox.shrink();
-
         return Row(
           children: [
             Row(

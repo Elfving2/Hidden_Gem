@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/* 
+  Widget for a custom description Field used in example edit profile view to display the users description
+  
+*/
 Widget buildDescriptionField(
   String labelText,
   TextEditingController controller,

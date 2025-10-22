@@ -6,6 +6,9 @@ import 'package:hidden_gem/model/user.dart';
 import 'package:hidden_gem/screens/edit_profile_view.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
+/*
+  Here you display your own profile you can see your own gems under Gallery and go to edit profile view
+*/
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
   @override

@@ -2,6 +2,12 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/*
+  Creates Gems, friend_requests, post_comments and users collection if they already dont exist
+  Apperently you cant create them like in MYSQL collections dosent exist if there isnt any document inside
+  them so i have to create fake Data all are labeled "FAKE"
+  Reference: https://firebase.google.com/docs/firestore/data-model
+*/
 class Inizilizedb {
   final db = FirebaseFirestore.instance;
 

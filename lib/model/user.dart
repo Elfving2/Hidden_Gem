@@ -1,6 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 
+/* 
+  * id - document id 
+  * displayName - name that users see example comments or social media feed name displayed
+  * photourl - image url from google 
+  * email - email of user. Used to add friends
+  * description - short description about the user
+  * friends - list of document id of other users, this user is friends with
+  * gems - users own created gems
+  * liked - gems of friends user has liked (gem document id)
+*/
 class User {
   final String id;
   final String displayName;

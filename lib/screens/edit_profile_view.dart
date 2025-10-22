@@ -7,6 +7,11 @@ import 'package:hidden_gem/screens/login_screen.dart';
 import 'package:hidden_gem/service/google_login_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
+/* 
+  Edit profile view is where user can look at there own gems, delete gems, edit display name
+  and edit description. From here is also where you logout.
+
+*/
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
 
@@ -53,6 +58,12 @@ class EditProfileScreenState extends State<EditProfile> {
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
+              /* 
+                logout dosent clear the cashe, 
+                program cant really clear cashe of phone,
+                which it shouldent. Large problem before
+
+              */
               await firebaseService.signOut();
 
               if (!mounted) return;
@@ -73,6 +84,10 @@ class EditProfileScreenState extends State<EditProfile> {
               )
             : ListView(
                 children: [
+                  /* 
+                    Displays image, description, and displayname to the user
+                    You can only edit description and displayname
+                  */
                   UserAvatar(imageUrl: currentUser!.photoUrl),
                   const SizedBox(height: 30),
                   textInput("Display Name", displayNameController),

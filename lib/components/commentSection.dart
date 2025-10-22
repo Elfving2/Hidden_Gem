@@ -4,6 +4,10 @@ import 'package:hidden_gem/model/comment.dart';
 import 'package:hidden_gem/model/user.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
+/*
+  Comment section displays comments on a specific post (gem) if there are no comments displays the text
+  no comments yet. Otherwise displays comments from post_comments firebase
+*/
 class CommentBottomSheet extends StatelessWidget {
   final String postId;
 

@@ -6,13 +6,22 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:rxdart/rxdart.dart';
 
-/*
-  REDO THIS WHOLE THING
-  AI DETECTED
-
- */
 class HiddenGemService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /* 
+    Uplaod hidden gem to firebase
+    For a gem to be accepted 
+    You need atleast 
+    * a description
+    * Name 
+    * atleast one image
+
+    lattitide and longitude is set before typing in gem details
+    then we add Gem to both current users list of gems
+    and to gems collection feels perhaps a little stupid to add to two places?
+    Come back to later and fix perhaps?
+  */
   Future<bool> uploadHiddenGem(
     String name,
     String description,
@@ -46,6 +55,10 @@ class HiddenGemService {
     }
   }
 
+  /*
+    Get friends document ids from currently looged in users friends tab 
+    returns document ids.
+  */
   Future<List> fetchFriendsGems() async {
     final user = FirebaseAuth.instance.currentUser;
     final userDoc = await FirebaseFirestore.instance
@@ -60,12 +73,26 @@ class HiddenGemService {
     return friendIds;
   }
 
+  /*
+    Boolean value to check if a post is the currently logged in users, i use this to make it possible for
+    currently logged in user to delete their own gems on map and in profile
+  */
   bool isUsersPost(String postOwner) {
     final user = FirebaseAuth.instance.currentUser;
     if (postOwner == user!.uid) return true;
     return false;
   }
 
+  /* 
+   Crazy method that need to be refactored its really shitty,
+   but here is what it does:
+   Gets users gems and adds it to a list both public and private
+   Then gets all gems from friends only the public onces that current user has liked, then 
+   it takes those ids of gems and maps them to the user that created those gems and combindes those gems 
+   to one list so there is one list of current users gems and friends gems 
+   I use a stream to get in real time updates so lets say we i i like a gem it wil directly appear on the map
+   with a blue marker
+  */
   Stream<List<HiddenGem>> getUserAndFriendsGems() {
     final user = FirebaseAuth.instance.currentUser;
     final myGemsStream = _firestore
@@ -89,7 +116,6 @@ class HiddenGemService {
           }).toList(),
         );
 
-    // Stream of friends' public gems
     final friendsStream = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
@@ -98,11 +124,9 @@ class HiddenGemService {
           final likedIds = List<String>.from(userDoc.data()?['liked'] ?? []);
 
           if (likedIds.isEmpty) {
-            // return an empty list stream if no liked gems
             return Stream.value(<HiddenGem>[]);
           }
 
-          // fetch only gems whose IDs are in the liked list
           return _firestore
               .collection('Gems')
               .where(FieldPath.documentId, whereIn: likedIds)
@@ -132,6 +156,12 @@ class HiddenGemService {
     );
   }
 
+  /*
+    Get friends gems by collection all friends document ids from friends field
+    then we go to Gems collection and get all the public gems with friends doucment id
+    and then create hidden gem objects from my model HiddenGem and put them inside a list to later display
+    in the social media feed
+  */
   Stream<List<HiddenGem>> getFriendsGems() async* {
     final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -172,10 +202,14 @@ class HiddenGemService {
         });
   }
 
+  /*
+    Delete from gems collection using gem document id
+  */
   Future<void> deleteFromGems(String gemId) async {
     await FirebaseFirestore.instance.collection('Gems').doc(gemId).delete();
   }
 
+  /* Delete gem from users liked field*/
   Future<void> deleteGemFromLiked(String gemId) async {
     final usersSnapshot = await _firestore
         .collection('users')
@@ -189,6 +223,7 @@ class HiddenGemService {
     }
   }
 
+  // delete gem from owners gem field
   Future<void> removeGemFromOwner(String gemId) async {
     final user = FirebaseAuth.instance.currentUser;
     await _firestore.collection('users').doc(user!.uid).update({
@@ -196,6 +231,7 @@ class HiddenGemService {
     });
   }
 
+  // remove comments from the deleted post using gems document id
   Future<void> removeCommentsFromDeletedPosts(String gemId) async {
     final querySnapshot = await _firestore
         .collection('post_comments')
@@ -207,6 +243,9 @@ class HiddenGemService {
     }
   }
 
+  /* 
+    fetch both private and public gems from currently logged in user
+  */
   Stream<List<HiddenGem>> getUsersGems() {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -232,6 +271,7 @@ class HiddenGemService {
         });
   }
 
+  // Like a post by incrementing like field by one
   Future<void> likePost(String postId) async {
     final userRef = _firestore.collection('Gems');
 
@@ -239,6 +279,10 @@ class HiddenGemService {
       userRef.doc(postId).update({'likes': FieldValue.increment(1)}),
     ]);
   }
+  /*
+  Like a post by incrementing like field by -1 there is no decrement method or atleast not what i could
+  find: https://stackoverflow.com/questions/55675911/fieldvalue-increment-for-cloud-firestore-in-flutter
+  */
 
   Future<void> deLikePost(String postId) async {
     final userRef = _firestore.collection('Gems');
@@ -246,6 +290,11 @@ class HiddenGemService {
     await userRef.doc(postId).update({'likes': FieldValue.increment(-1)});
   }
 
+  /*
+    Validating for creating a gem 
+    returns incorrect validation text if any of the parametes are empty
+    if not empty creates the gem 
+  */
   String validateGem(String name, String description, List<File> images) {
     if (name.isEmpty) return "Please enter a name!";
 

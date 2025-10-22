@@ -32,7 +32,7 @@ class _AddHiddenGemState extends State<addHiddenGem> {
   }
 
   Future<void> pickImage(ImageSource source) async {
-    // If there are 4 images dont add more.
+    // If there are 4 images you cant add more 4 is max
     if (images.length == 4) return;
     final picked = await ImagePicker().pickImage(
       source: source,
@@ -167,6 +167,12 @@ class _AddHiddenGemState extends State<addHiddenGem> {
     );
   }
 
+  /*
+  Display images if there are any else display this 
+  TEXT widget = No image choosen
+  If user hasnt picked any images yet we dont load "image box" when atleast one image is picked
+  we load the image box there is a limit of four images per post
+*/
   Widget displayImages(List<File> images, BuildContext context) {
     if (images.isNotEmpty) {
       return Row(

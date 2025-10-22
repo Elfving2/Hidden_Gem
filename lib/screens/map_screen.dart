@@ -7,6 +7,11 @@ import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 import 'package:location/location.dart';
 
+/*
+  Litterly a map from google maps api here you can view gems own and friends gems, create gems and 
+  delete your own gems
+
+*/
 class MapPage extends StatelessWidget {
   const MapPage({super.key});
 

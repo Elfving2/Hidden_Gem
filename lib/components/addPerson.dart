@@ -1,11 +1,18 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:hidden_gem/components/friendRequest.dart';
 import 'package:hidden_gem/service/friend_request_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
 final _userService = UserService();
+
+/*
+  Displays the friend request view 
+  To add friend enter email of user
+  Also displays friend requests of users where you can accept or decline their requests
+  with displayname, and profile picture
+  
+*/
 
 Future<void> showAddFriendDialog(
   BuildContext context,

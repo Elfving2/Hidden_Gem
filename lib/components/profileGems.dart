@@ -3,6 +3,9 @@ import 'package:hidden_gem/components/gemWidget.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 
+/*
+  Displays owners gems in gallery 
+*/
 class ProfileGemsGrid extends StatelessWidget {
   const ProfileGemsGrid({super.key});
 

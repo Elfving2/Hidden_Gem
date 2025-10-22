@@ -5,6 +5,10 @@ import 'package:hidden_gem/model/user.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
+/*
+  Builds gems view displaying pictures, name and user image
+  if user is the owner of the gem also add a delete gem button
+*/
 class HiddenGemCard extends StatelessWidget {
   final HiddenGem gem;
 
@@ -60,7 +64,7 @@ class HiddenGemCard extends StatelessWidget {
             title: Text("Loading..."),
           );
         }
-
+        // Kinda unessasary dont really need but just for future use
         if (snapshot.hasError || !snapshot.hasData) {
           return const ListTile(
             leading: CircleAvatar(child: Icon(Icons.error)),

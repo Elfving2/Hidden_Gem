@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
+/*
+  Comment widget used to add a comment to a post from a user 
+*/
 class CommentInput extends StatefulWidget {
   final String postId;
 

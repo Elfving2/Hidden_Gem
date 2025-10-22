@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hidden_gem/service/friend_request_service.dart';
 import 'package:hidden_gem/service/user_services.dart';
 
+/*
+  Builds the friendsView displays your friends with a remove button
+  Note: addded a nice confirm removal just to make sure the user dosent acedently press remove
+*/
 class FriendTile extends StatelessWidget {
   final String fullName;
   final String profilePicture;

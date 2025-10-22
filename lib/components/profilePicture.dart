@@ -2,6 +2,9 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
+/*
+  Displays Image of user
+*/
 class UserAvatar extends StatelessWidget {
   final String imageUrl;
   final double size;

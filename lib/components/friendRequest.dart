@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/*
+  Builds the friendRequest card where you can accept or denied a friend request 
+*/
 class FriendRequestCard extends StatelessWidget {
   final String fullName;
   final String profilePicture;

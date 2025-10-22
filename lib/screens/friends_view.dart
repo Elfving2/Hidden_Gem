@@ -3,6 +3,12 @@ import 'package:hidden_gem/components/addPerson.dart';
 import 'package:hidden_gem/components/friend.dart';
 import 'package:hidden_gem/service/friend_request_service.dart';
 
+/*
+  Displays your friends and friend request by pressing the "add friend" icon.
+  email controller is takes the text from the user and inputs it into show friendsdialog where
+  you can see friends and send the friendrequest widget
+
+*/
 class FriendsView extends StatefulWidget {
   const FriendsView({super.key});
 
@@ -45,13 +51,13 @@ class FriendsViewState extends State<FriendsView> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
+          // if getFriendsStream map is empty meaning you have no friends just return this text:
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text("No friends yet"));
           }
 
           final friends = snapshot.data!;
-
+          // if map has data return this listView builder and display Friends using displayname, photoUrl, document id
           return ListView.builder(
             itemCount: friends.length,
             itemBuilder: (context, index) {

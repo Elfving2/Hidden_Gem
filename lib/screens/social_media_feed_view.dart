@@ -3,6 +3,12 @@ import 'package:hidden_gem/components/postWidget.dart';
 import 'package:hidden_gem/model/hiddengem.dart';
 import 'package:hidden_gem/service/hidden_gem_service.dart';
 
+/*
+  Social media feed is where you can see friends gems and like them to display them on your own map
+  with a blue marker, this feed is kinda like instagrams feed where you can like and comment on the specific post
+  only really big difference being that to view friends feed you need to both be friends with 
+  eachother. Like facebook.
+*/
 class SocialMediaFeed extends StatefulWidget {
   const SocialMediaFeed({super.key});
 
