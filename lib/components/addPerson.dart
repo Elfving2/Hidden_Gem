@@ -32,16 +32,16 @@ Future<void> showAddFriendDialog(
               controller: controller,
               decoration: const InputDecoration(hintText: "example@email.com"),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 5),
             ElevatedButton(
               onPressed: () =>
                   _sendRequest(context, controller, requestService),
               child: const Text("Send"),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             SizedBox(
               width: 400,
-              height: 250,
+              height: 240,
               child: StreamBuilder<List<Map<String, dynamic>>>(
                 stream: requestService.getIncomingFriendRequests(),
                 builder: (context, snapshot) {
